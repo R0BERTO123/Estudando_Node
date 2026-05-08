@@ -1,6 +1,8 @@
 import express from "express";
 const servidor = express()
 
+servidor.use(express.json())
+
 servidor.get("/helloworld", (rec, post) => {
     post.send("Hello, World")
 })
@@ -37,6 +39,23 @@ servidor.get("/mensagem/ola",(req,resp)=>{
     let nome = req.query.nome ?? "Oxi"
     resp.send("Olá "+ nome)
 
+})
+
+servidor.post("/media",(req,resp)=>{
+    let n1 = req.body.media1
+    let n2 = req.body.media2
+    let n3 = req.body.media3
+    let resposta = (n1+n2+n3)/3
+    resp.send("A media é "+resposta)
+
+})
+
+servidor.post("/dobro",(req,resp)=>{
+    let array = req.body.numeros
+    for(let i = 0;i<array.length;i++){
+        array[i] = array[i]*2
+    }
+    resp.send("o dobro dos numeros sao "+array)
 })
 
 servidor.listen(6767, () => console.log(" Farmei Aura "))
