@@ -1,22 +1,39 @@
 import express from "express";
+import cors from "cors"
+
 const servidor = express()
 
 servidor.use(express.json())
+servidor.use(cors())
 
 servidor.get("/helloworld", (rec, post) => {
-    post.send("Hello, World")
+    post.send({
+        mensagem :"Hello, World"
+})
 })
 
 servidor.get("/helloworld/boas", (rec, post) => {
 
-    post.send("boaaa")
+    post.send({
+        mensagem:"boaaa"}
+    )
 })
 
 servidor.get("/calculadora/somar/:n1/:n2", (rec, resp) => {
+    
+    if(isNaN(rec.params.n1)||isNaN(rec.params.n2)){
+        resp.status(402).send({
+            erro:"erro"
+        })
+        return;
+    }
+
     let n1 = Number(rec.params.n1)
     let n2 = Number(rec.params.n2)
     let resposta = n1 + n2
-    resp.send("A soma é " + resposta)
+    resp.send({
+        soma:resposta}
+    )
 })
 
 servidor.get("/calculadora/somar2", (req, resp) => {
@@ -59,12 +76,36 @@ servidor.post("/media", (req, resp) => {
 })
 
 servidor.post("/dobro", (req, resp) => {
+    if(isNaN(req.body.numeros)){
+        resp.status(402).resp({
+            erro:"erro"
+        })
+        return;
+    }
+
     let array = req.body.numeros
     for (let i = 0; i < array.length; i++) {
         array[i] = array[i] * 2
     }
     resp.send({
         dobros:array
+    })
+})
+
+servidor.get("/dobroG",(req,resp)=>{
+   
+    let numero = Number(req.query.dobro)
+
+    if(isNaN(numero)){
+        resp.status(402).send({
+            erro:"erro"
+        })
+        return;
+    }
+
+    let dobro = numero*2
+    resp.send({
+        dobro:dobro
     })
 })
 
@@ -88,28 +129,42 @@ servidor.post("/loja/pedido", (req, resp) => {
 })
 
 servidor.post("/loja/pedido/completo", (req, resp) => {
+    
+    try {
 
-    let items = req.body.item
-    let parcela = req.body.parcela
-    let cupom = req.query.cupom
+        if(!req.body.item)throw new Error("O parâmetro item esta invalido")
+        if(!req.body.parcela || isNaN(req.body.parcela)) throw new Error("O parâmetro parcela esta invalido")
+        
 
-    let precoItems = 0
+        let items = req.body.item
+        let parcela = req.body.parcela
+        let cupom = req.query.cupom
+    
+        let precoItems = 0
+    
+        for (let i = 0; i < items.length; i++) {
+            precoItems +=items[i].preco
+        }
+       
+        if(parcela>1){
+            let juros = precoItems*0.05
+            precoItems +=juros
+        }
+        if(cupom == "QUERO100"){
+            precoItems -= 100
+        }
+    
+        resp.send({
+            preco:precoItems
+        })
 
-    for (let i = 0; i < items.length; i++) {
-        precoItems +=items[i].preco
+    } catch (error) {
+        resp.status(400).send({
+            erro: error.message
+        })
     }
+
    
-    if(parcela>1){
-        let juros = precoItems*0.05
-        precoItems +=juros
-    }
-    if(cupom == "QUERO100"){
-        precoItems -= 100
-    }
-
-    resp.send({
-        preco:precoItems
-    })
 
 })
 
